@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-prod-deployment
+  namespace: durian-prod
+  labels:
+    app: nginx
+    layer: frontend
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: contents
+        - mountPath: /etc/nginx/conf.d
+          name: nginx-config
+
+      volumes:
+      - name: contents
+        persistentVolumeClaim:
+          claimName: durian-app-pvc
+      - name: nginx-config
+        configMap:
+          name: default.conf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpfpm-prod-deployment
+  namespace: durian-prod
+  labels:
+    app: phpfpm
+    layer: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpfpm
+  template:
+    metadata:
+      labels:
+        app: phpfpm
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: phpfpm
+          image: php:fpm-alpine
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /var/www/html/
+              name: contents
+      volumes:
+        - name: contents
+          persistentVolumeClaim:
+            claimName: durian-app-pvc 
+

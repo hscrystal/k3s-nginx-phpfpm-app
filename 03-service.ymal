@@ -1,0 +1,33 @@
+---
+kind: Service 
+apiVersion: v1 
+metadata:
+  name: nginx
+  namespace: durian-prod
+  labels:
+    app: nginx
+    layer: frontend
+spec:
+  selector: 
+    app: nginx
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+
+---
+kind: Service 
+apiVersion: v1 
+metadata:
+  name: phpfpm
+  namespace: durian-prod
+  labels:
+    app: phpfpm
+    layer: backend
+spec:
+  selector: 
+    app: phpfpm
+  ports:
+    - name: phpfpm
+      port: 9000
+      targetPort: 9000
